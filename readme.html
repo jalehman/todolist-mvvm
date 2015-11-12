@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>MVVM on iOS</title>
+<meta name="author" content="(Josh Lehman)"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/reveal.js/3.0.0/css/reveal.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/reveal.js/3.0.0/css/theme/moon.css" id="theme"/>
+<link rel="stylesheet" href=""/>
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/reveal.js/3.0.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1>MVVM on iOS</h1>
+<h2>Josh Lehman</h2>
+<h2><a href="mailto:josh@savvy.ai">josh@savvy.ai</a></h2>
+<h2></h2>
+</section>
+
+<section>
+<section id="slide-orgheadline2">
+<h2 id="orgheadline2">MVC: Model-View-Controller</h2>
+
+<div class="figure">
+<p><img src="./img/mvc.png" alt="mvc.png" />
+</p>
+</div>
+
+<ul>
+<li>Architectural design pattern</li>
+<li>Developed by Xerox PARC in the 1970s</li>
+<li>Expressed as a general concept in 1988</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline1">
+<h3 id="orgheadline1">It's an old concept</h3>
+<ul>
+<li>Which is not bad</li>
+<li>Good ideas are improved upon over time</li>
+
+</ul>
+
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline14">
+<h2 id="orgheadline14">MVVM: Model-View-ViewModel</h2>
+
+<div class="figure">
+<p><img src="./img/mvvm.png" alt="mvvm.png" />
+</p>
+</div>
+
+<ul>
+<li>Developed by Microsoft, announced in 2005</li>
+<li>A slight addition to MVC</li>
+<li>We'll discuss <b>Data Binding</b> later</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline3">
+<h3 id="orgheadline3">Adds the <i>ViewModel</i></h3>
+<blockquote nil>
+<p>
+"The central component of MVC, the model, captures the behavior of the
+application in terms of its problem domain, independent of the user interface."
+</p>
+
+<p>
+&#x2013; <a href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#Components">Wikipedia</a>
+</p>
+</blockquote>
+
+<p>
+<i>(where <b>user interface</b> is the View and Controller)</i>
+</p>
+
+</section>
+<section>
+
+<blockquote nil>
+<p>
+The <code>ViewModel</code> captures the <i>behaviors</i> of an user interface in terms of
+general user interactions, independent of the view itself.
+</p>
+</blockquote>
+
+</section>
+<section id="slide-orgheadline4">
+<h3 id="orgheadline4">Why is this a good thing?</h3>
+
+<div class="figure">
+<p><img src="./img/massive-view-controller.png" alt="massive-view-controller.png" />
+</p>
+</div>
+
+<ul>
+<li>Smaller view controllers!</li>
+<li>Lower coupling
+<ul>
+<li>Decouples GUI code from presentation logic and state</li>
+
+</ul></li>
+<li>Headless testing</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgheadline5">
+<h3 id="orgheadline5">View and ViewModel Relationship</h3>
+<ul>
+<li><i>Generally</i>, one <code>ViewModel</code> per controller or <code>UIView</code> subclass:
+<ul>
+<li><code>UIViewController</code></li>
+<li><code>UITableViewCell</code></li>
+<li><code>UICollectionViewCell</code></li>
+<li>etc.</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline6">
+<h3 id="orgheadline6">Ownership</h3>
+
+<div class="figure">
+<p><img src="./img/mvvm.png" alt="mvvm.png" />
+</p>
+</div>
+
+<ul>
+<li>The <b>View</b> <i>owns</i> the <b>ViewModel</b>
+<ul>
+<li>ViewModels know <i>nothing</i> about Views</li>
+
+</ul></li>
+<li>The <b>ViewModel</b> <i>owns</i> the <b>Model</b>
+<ul>
+<li>Models know <i>nothing</i> about ViewModels</li>
+
+</ul></li>
+<li>The <b>View</b> knows <i>nothing</i> about the <b>Model</b></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline7">
+<h3 id="orgheadline7">Views do not communicate!</h3>
+<p>
+Views communicate with their ViewModels, which communicate with each other.
+</p>
+</section>
+<section id="slide-orgheadline8">
+<h3 id="orgheadline8">Problem</h3>
+<p>
+If the view's state is stored in a <code>ViewModel</code> class, how do we keep the two in
+sync?
+</p>
+
+</section>
+<section id="slide-orgheadline13">
+<h3 id="orgheadline13">Data Binding</h3>
+<ul>
+<li>Not strictly <i>necessary</i>, but really helpful
+<ul>
+<li>Delegates can work here, but are more verbose</li>
+
+</ul></li>
+<li>Helps keep <code>ViewModel</code> in sync with its <code>View</code></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline9">
+<h4 id="orgheadline9">1-way &gt; 2-way</h4>
+<ul>
+<li>2-way binding is really hard (it's cyclical)
+<ul>
+<li>If 2-way binding seems like the only solution, find a better solution</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline10">
+<h4 id="orgheadline10"><a href="https://github.com/SwiftBond/Bond">ReactiveCocoa</a> (RAC)</h4>
+<ul>
+<li>Mostly based on <a href="https://en.wikipedia.org/wiki/Functional_reactive_programming">Functional Reactive Programming (FRP)</a>
+<ul>
+<li>Represent data as "streams of values over time"</li>
+
+</ul></li>
+<li>Used at: <a href="http://savvy.ai/">Savvy</a>, Snapchat, GitHub, probably some other places too</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline11">
+<h4 id="orgheadline11">Popular and well-maintained</h4>
+<dl>
+<dt>First released</dt><dd>2/26/2012</dd>
+<dt>Last commit to master</dt><dd>11/3/2015 (at time of writing)</dd>
+<dt>Stars</dt><dd>11,081</dd>
+<dt>Contributors</dt><dd>129</dd>
+
+</dl>
+
+</section>
+<section id="slide-orgheadline12">
+<h4 id="orgheadline12"><a href="https://github.com/SwiftBond/Bond">Bond</a></h4>
+<ul>
+<li>A data binding framework</li>
+<li>Less concept-heavy</li>
+<li>Also well maintained</li>
+<li>I am less familiar with it &#x2013; examples will use RAC</li>
+
+</ul>
+
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline22">
+<h2 id="orgheadline22">Interlude: ReactiveCocoa</h2>
+<div class="outline-text-2" id="text-orgheadline22">
+</div></section>
+<section id="slide-orgheadline15">
+<h3 id="orgheadline15">What is "Functional Reactive Programming"?</h3>
+<blockquote nil>
+<p>
+Functional reactive programming (FRP) is a programming paradigm for reactive
+programming (asynchronous dataflow programming) using the building blocks of
+functional programming (e.g. map, reduce, filter).
+</p>
+</blockquote>
+
+</section>
+<section id="slide-orgheadline16">
+<h3 id="orgheadline16">Signals</h3>
+<ul>
+<li>Represent streams of values (data) as they change</li>
+<li>Signals can be <i>observed</i></li>
+<li>Two varieties in RAC: <code>SignalProducer</code> and <code>Signal</code></li>
+<li>Send <i>events</i>:
+<ul>
+<li><code>next</code>: The data that the signal carries &#x2013; can happen many times</li>
+<li><code>error</code>: An error occurred &#x2013; terminates</li>
+<li><code>interrupted</code>: The signal was interrupted &#x2013; terminates</li>
+<li><code>completed</code>: Successful completion &#x2013; terminates</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline17">
+<h3 id="orgheadline17">Signal Producers</h3>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">doNetworkStuff</span><span style="color: #2aa198;">()</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">JSON</span>, <span style="color: #b58900;">NoError</span>&gt;
+<span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">producer </span>= doNetworkStuff<span style="color: #2aa198;">()</span>
+producer.startWithNext <span style="color: #2aa198;">{</span> json <span style="color: #859900; font-weight: bold;">in</span> print<span style="color: #b58900;">(</span>json<span style="color: #b58900;">)</span> <span style="color: #2aa198;">}</span>
+</pre>
+</div>
+
+<ul>
+<li>Has to be "started" to do anything</li>
+<li>Kind of like promises</li>
+<li>Network requests are a good example</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline18">
+<h3 id="orgheadline18">Signals</h3>
+<ul>
+<li>Send values regardless of whether or not anything is observing</li>
+<li>"Always On" semantics</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline19">
+<h3 id="orgheadline19">Mutable Properties</h3>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">text </span>= <span style="color: #b58900;">MutableProperty</span>&lt;<span style="color: #b58900;">String</span>&gt;<span style="color: #2aa198;">(</span><span style="color: #2aa198;">"Hello, World!"</span><span style="color: #2aa198;">)</span>
+text.value <span style="color: #586e75;">// </span><span style="color: #586e75;">=&gt; "Hello, World!"</span>
+text.producer <span style="color: #586e75;">// </span><span style="color: #586e75;">=&gt; SignalProducer&lt;String, NoError&gt;</span>
+text.producer.startWithNext <span style="color: #2aa198;">{</span> s <span style="color: #859900; font-weight: bold;">in</span> print<span style="color: #b58900;">(</span>s<span style="color: #b58900;">)</span> <span style="color: #2aa198;">}</span> <span style="color: #586e75;">// </span><span style="color: #586e75;">prints "Hello, World!"</span>
+text.value = <span style="color: #2aa198;">"Yo."</span> <span style="color: #586e75;">// </span><span style="color: #586e75;">prints "Yo"</span>
+</pre>
+</div>
+
+<ul>
+<li>Exposes a <code>SignalProducer</code> of the values in the property</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline20">
+<h3 id="orgheadline20">Binding</h3>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #2aa198;">(</span><span style="color: #268bd2;">observer, producer</span><span style="color: #2aa198;">)</span> = <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">String</span>, <span style="color: #b58900;">NoError</span>&gt;.buffer<span style="color: #2aa198;">()</span>
+<span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">text </span>= <span style="color: #b58900;">MutableProperty</span>&lt;<span style="color: #b58900;">String</span>&gt;<span style="color: #2aa198;">(</span><span style="color: #2aa198;">""</span><span style="color: #2aa198;">)</span>
+text &lt;~ producer
+observer.sendNext<span style="color: #2aa198;">(</span><span style="color: #2aa198;">"a"</span><span style="color: #2aa198;">)</span>
+text.value <span style="color: #586e75;">// </span><span style="color: #586e75;">"a"</span>
+observer.sendNext<span style="color: #2aa198;">(</span><span style="color: #2aa198;">"b"</span><span style="color: #2aa198;">)</span>
+text.value <span style="color: #586e75;">// </span><span style="color: #586e75;">"b"</span>
+</pre>
+</div>
+
+<ul>
+<li>We can <i>bind</i> the result of a <code>SignalProducer</code> to a <code>MutableProperty</code></li>
+<li>The binding operator: <code>&lt;~</code></li>
+<li>No <code>KVO</code>!</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgheadline21">
+<h3 id="orgheadline21">Actions</h3>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">saveTodoOnServer</span><span style="color: #2aa198;">(</span>todo: <span style="color: #b58900;">Todo</span><span style="color: #2aa198;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NSError</span>&gt; <span style="color: #2aa198;">{</span> 
+    <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #b58900;">SignalProducer</span><span style="color: #b58900;">(</span>value: <span style="color: #268bd2; font-weight: bold;">true</span><span style="color: #b58900;">)</span>
+<span style="color: #2aa198;">}</span>
+<span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">createTodo </span>= <span style="color: #b58900;">Action</span> <span style="color: #2aa198;">{</span> <span style="color: #b58900;">(</span>t: <span style="color: #b58900;">Todo</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NSError</span>&gt; <span style="color: #859900; font-weight: bold;">in</span> 
+    <span style="color: #859900; font-weight: bold;">return</span> saveTodoOnServer<span style="color: #b58900;">(</span>t<span style="color: #b58900;">)</span> 
+<span style="color: #2aa198;">}</span>
+<span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">todo </span>= <span style="color: #b58900;">Todo</span><span style="color: #2aa198;">()</span>
+createTodo.values.observeNext <span style="color: #2aa198;">{</span> success <span style="color: #859900; font-weight: bold;">in</span> print<span style="color: #b58900;">(</span>success<span style="color: #b58900;">)</span> <span style="color: #2aa198;">}</span>
+createTodo.apply<span style="color: #2aa198;">(</span>todo<span style="color: #2aa198;">)</span> <span style="color: #586e75;">// </span><span style="color: #586e75;">=&gt; SignalProducer&lt;Bool, NSError&gt;</span>
+createTodo.apply<span style="color: #2aa198;">(</span>todo<span style="color: #2aa198;">)</span>.start<span style="color: #2aa198;">()</span> <span style="color: #586e75;">// </span><span style="color: #586e75;">prints "true"</span>
+createTodo.apply<span style="color: #2aa198;">(</span>todo<span style="color: #2aa198;">)</span>.start<span style="color: #2aa198;">()</span> <span style="color: #586e75;">// </span><span style="color: #586e75;">prints "true"</span>
+</pre>
+</div>
+
+<ul>
+<li>Like a function, but where the result of invocation is <i>observed</i> rather than
+<i>returned</i>
+<ul>
+<li>Can have many observers!</li>
+
+</ul></li>
+<li>Take parameters, return a <code>SignalProducer</code>
+<ul>
+<li>We <i>apply</i> parameters, and then <i>start</i> the resulting producer</li>
+<li>Expose <code>values</code> property: A <code>Signal</code> of the values of the <code>SignalProducer</code></li>
+
+</ul></li>
+
+</ul>
+
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline28">
+<h2 id="orgheadline28">A Sample Application: Todo List</h2>
+<div class="outline-text-2" id="text-orgheadline28">
+</div></section>
+<section id="slide-orgheadline25">
+<h3 id="orgheadline25">ViewModels Drive the Application</h3>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">protocol</span> <span style="color: #b58900;">ViewModelServicesProtocol</span> <span style="color: #2aa198;">{</span>
+
+    <span style="color: #859900; font-weight: bold;">var</span> <span style="color: #268bd2;">todo</span>: <span style="color: #b58900;">TodoServiceProtocol</span> <span style="color: #b58900;">{</span> <span style="color: #859900; font-weight: bold;">get</span> <span style="color: #b58900;">}</span>
+    <span style="color: #859900; font-weight: bold;">var</span> <span style="color: #268bd2;">date</span>: <span style="color: #b58900;">DateServiceProtocol</span> <span style="color: #b58900;">{</span> <span style="color: #859900; font-weight: bold;">get</span> <span style="color: #b58900;">}</span>
+
+    <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">push</span><span style="color: #b58900;">(</span>viewModel: <span style="color: #b58900;">ViewModelProtocol</span><span style="color: #b58900;">)</span>
+    <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">pop</span><span style="color: #b58900;">(</span>viewModel: <span style="color: #b58900;">ViewModelProtocol</span><span style="color: #b58900;">)</span>
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #859900; font-weight: bold;">protocol</span> <span style="color: #b58900;">ViewModelProtocol</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">var</span> <span style="color: #268bd2;">services</span>: <span style="color: #b58900;">ViewModelServicesProtocol</span> <span style="color: #b58900;">{</span> <span style="color: #859900; font-weight: bold;">get</span> <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-orgheadline23">
+<h4 id="orgheadline23">Navigation</h4>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">push</span><span style="color: #2aa198;">(</span>viewModel: <span style="color: #b58900;">ViewModelProtocol</span><span style="color: #2aa198;">)</span>
+<span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">pop</span><span style="color: #2aa198;">(</span>viewModel: <span style="color: #b58900;">ViewModelProtocol</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<ul>
+<li><b>ViewModels</b> will instantiate and <code>push</code> other <b>ViewModels</b>.</li>
+<li>Services are responsible for instantiating the proper Views.</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline24">
+<h4 id="orgheadline24">Model Services</h4>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">protocol</span> <span style="color: #b58900;">TodoServiceProtocol</span> <span style="color: #2aa198;">{</span>    
+    <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">update</span><span style="color: #b58900;">(</span>todo: <span style="color: #b58900;">Todo</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Todo</span>, <span style="color: #b58900;">NoError</span>&gt;
+    <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">delete</span><span style="color: #b58900;">(</span>todo: <span style="color: #b58900;">Todo</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NoError</span>&gt;
+    <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">create</span><span style="color: #b58900;">(</span>note: <span style="color: #b58900;">String</span>, dueDate: <span style="color: #b58900;">NSDate</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Todo</span>, <span style="color: #b58900;">NoError</span>&gt;
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+
+<ul>
+<li>Model services deal with stateful resources, e.g. network operations</li>
+<li>Only <b>ViewModels</b> have access to services</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgheadline26">
+<h3 id="orgheadline26">Views Observe ViewModels and <i>React</i></h3>
+<div class="org-src-container">
+
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">class</span> <span style="color: #b58900;">TodoTableViewModel</span>: <span style="color: #b58900;">ViewModel</span>, <span style="color: #b58900;">CreateTodoViewModelDelegate</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">todos </span>= <span style="color: #b58900;">MutableProperty</span>&lt;<span style="color: #b58900;">[</span><span style="color: #b58900;">TodoCellViewModel</span><span style="color: #b58900;">]</span>&gt;<span style="color: #b58900;">(</span><span style="color: #268bd2;">[]</span><span style="color: #b58900;">)</span>
+    <span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">deleteTodo</span>: <span style="color: #b58900;">Action</span>&lt;<span style="color: #b58900;">(</span>todos: <span style="color: #268bd2;">[</span><span style="color: #b58900;">TodoCellViewModel</span><span style="color: #268bd2;">]</span>, cell: <span style="color: #b58900;">TodoCellViewModel</span><span style="color: #b58900;">)</span>, <span style="color: #b58900;">NSIndexPath</span>?, <span style="color: #b58900;">NoError</span>&gt;
+<span style="color: #2aa198;">}</span>
+<span style="color: #859900; font-weight: bold;">class</span> <span style="color: #b58900;">TodoTableViewController</span>: <span style="color: #b58900;">ReactiveViewController</span>&lt;<span style="color: #b58900;">TodoTableViewModel</span>&gt; <span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">override</span> <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">viewDidLoad</span><span style="color: #b58900;">()</span> <span style="color: #b58900;">{</span>
+        <span style="color: #859900; font-weight: bold;">super</span>.viewDidLoad<span style="color: #268bd2;">()</span>
+        <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">removeRow</span><span style="color: #268bd2;">(</span>indexPath: <span style="color: #b58900;">NSIndexPath</span>?<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            todoTableView.deleteRowsAtIndexPaths<span style="color: #6c71c4;">(</span><span style="color: #859900;">[</span>indexPath!<span style="color: #859900;">]</span>, withRowAnimation: .<span style="color: #b58900;">Left</span><span style="color: #6c71c4;">)</span>
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #586e75;">// </span><span style="color: #586e75;">Remove a row whenever a Todo is deleted</span>
+        viewModel.deleteTodo.values
+            .filter <span style="color: #268bd2;">{</span> $0 != <span style="color: #268bd2; font-weight: bold;">nil</span> <span style="color: #268bd2;">}</span>
+            .observeOn<span style="color: #268bd2;">(</span><span style="color: #b58900;">UIScheduler</span><span style="color: #6c71c4;">()</span><span style="color: #268bd2;">)</span>
+            .observeNext<span style="color: #268bd2;">(</span>removeRow<span style="color: #268bd2;">)</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-orgheadline27">
+<h3 id="orgheadline27">The Code</h3>
+<p>
+<a href="https://github.com/jalehman/todolist-mvvm">https://github.com/jalehman/todolist-mvvm</a>
+</p>
+
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline30">
+<h2 id="orgheadline30">Inspiration &amp; Credits</h2>
+<ul>
+<li><a href="http://blog.scottlogic.com/ceberhardt/">Colin Eberhardt</a>'s series of tutorials on MVVM and RAC</li>
+<li><a href="https://realm.io/news/andy-matuschak-controlling-complexity">Controlling Complexity in Swift</a> by Andy Matuschak</li>
+<li><a href="https://www.youtube.com/watch?v=7AqXBuJOJkY">Enemy of the State</a> by Justin Spahr-Summers</li>
+<li>Wikipedia</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline29">
+<h3 id="orgheadline29">Mobile Makers</h3>
+<p>
+Thanks for letting me talk!
+</p>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/head.min.js"></script>
+<script src="https://cdn.jsdelivr.net/reveal.js/3.0.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: false,
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

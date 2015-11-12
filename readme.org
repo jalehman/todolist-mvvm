@@ -17,6 +17,7 @@
 + Which is not bad
 + Good ideas are improved upon over time
 
+
 * MVVM: Model-View-ViewModel
 
 [[./img/mvvm.png]]
@@ -39,8 +40,8 @@ application in terms of its problem domain, independent of the user interface."
 #+REVEAL: split
 
 #+begin_quote
-The =ViewModel= captures the behaviors of an user interface in terms of general
-user interactions, independent of the view itself.
+The =ViewModel= captures the /behaviors/ of an user interface in terms of
+general user interactions, independent of the view itself.
 #+end_quote
 
 ** Why is this a good thing?
@@ -52,14 +53,6 @@ user interactions, independent of the view itself.
   + Decouples GUI code from presentation logic and state
 + Headless testing
  
-
-* In Practice: MVVM in Cocoa
-
-[[./img/swift.png]]
-
-** Views
-
-+ Comprised of =UIViewController=, =UIView=, nibs, storyboards
 
 ** View and ViewModel Relationship
 
@@ -209,6 +202,7 @@ createTodo.apply(todo).start() // prints "true"
   + We /apply/ parameters, and then /start/ the resulting producer
   + Expose =values= property: A =Signal= of the values of the =SignalProducer=
 
+
 * A Sample Application: Todo List
 
 ** ViewModels Drive the Application
@@ -251,6 +245,7 @@ protocol TodoServiceProtocol {
 + Model services deal with stateful resources, e.g. network operations
 + Only *ViewModels* have access to services
 
+
 ** Views Observe ViewModels and /React/
 
 #+begin_src swift
@@ -272,3 +267,20 @@ class TodoTableViewController: ReactiveViewController<TodoTableViewModel> {
     }
 }
 #+end_src
+
+
+** Demo
+
+The code: https://github.com/jalehman/todolist-mvvm
+
+
+* Inspiration & Credits
+
++ [[http://blog.scottlogic.com/ceberhardt/][Colin Eberhardt]]'s series of tutorials on MVVM and RAC
++ [[https://realm.io/news/andy-matuschak-controlling-complexity][Controlling Complexity in Swift]] by Andy Matuschak
++ [[https://www.youtube.com/watch?v=7AqXBuJOJkY][Enemy of the State]] by Justin Spahr-Summers
++ Wikipedia
+
+** Mobile Makers
+
+Thanks for letting me talk!
