@@ -1,0 +1,274 @@
+#+TITLE: MVVM on iOS
+#+EMAIL: josh@savvy.ai
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+OPTIONS: toc:nil reveal_slide_number:nil num:nil
+#+REVEAL_TRANS: linear
+
+* MVC: Model-View-Controller
+
+[[./img/mvc.png]]
+
++ Architectural design pattern
++ Developed by Xerox PARC in the 1970s
++ Expressed as a general concept in 1988
+
+** It's an old concept
+
++ Which is not bad
++ Good ideas are improved upon over time
+
+* MVVM: Model-View-ViewModel
+
+[[./img/mvvm.png]]
+
++ Developed by Microsoft, announced in 2005
++ A slight addition to MVC
++ We'll discuss *Data Binding* later
+
+** Adds the /ViewModel/ 
+
+#+begin_quote
+"The central component of MVC, the model, captures the behavior of the
+application in terms of its problem domain, independent of the user interface."
+
+-- [[https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#Components][Wikipedia]]
+#+end_quote
+
+/(where *user interface* is the View and Controller)/
+
+#+REVEAL: split
+
+#+begin_quote
+The =ViewModel= captures the behaviors of an user interface in terms of general
+user interactions, independent of the view itself.
+#+end_quote
+
+** Why is this a good thing?
+
+[[./img/massive-view-controller.png]]
+
++ Smaller view controllers!
++ Lower coupling
+  + Decouples GUI code from presentation logic and state
++ Headless testing
+ 
+
+* In Practice: MVVM in Cocoa
+
+[[./img/swift.png]]
+
+** Views
+
++ Comprised of =UIViewController=, =UIView=, nibs, storyboards
+
+** View and ViewModel Relationship
+
++ /Generally/, one =ViewModel= per controller or =UIView= subclass:
+  + =UIViewController=
+  + =UITableViewCell=
+  + =UICollectionViewCell=
+  + etc.
+
+** Ownership
+
+[[./img/mvvm.png]]
+
++ The *View* /owns/ the *ViewModel*
+  + ViewModels know /nothing/ about Views
++ The *ViewModel* /owns/ the *Model*
+  + Models know /nothing/ about ViewModels
++ The *View* knows /nothing/ about the *Model*
+
+** Views do not communicate!
+
+Views communicate with their ViewModels, which communicate with each other.
+** Problem
+
+If the view's state is stored in a =ViewModel= class, how do we keep the two in
+sync?
+
+** Data Binding
+
++ Not strictly /necessary/, but really helpful
+  + Delegates can work here, but are more verbose
++ Helps keep =ViewModel= in sync with its =View=
+
+*** 1-way > 2-way
+
++ 2-way binding is really hard (it's cyclical)
+  + If 2-way binding seems like the only solution, find a better solution
+
+*** [[https://github.com/SwiftBond/Bond][ReactiveCocoa]] (RAC)
+
++ Mostly based on [[https://en.wikipedia.org/wiki/Functional_reactive_programming][Functional Reactive Programming (FRP)]]
+  + Represent data as "streams of values over time"
++ Used at: Savvy, Snapchat, GitHub, probably some other places too
+
+*** Popular and well-maintained
+
++ First released :: 2/26/2012
++ Last commit to master :: 11/3/2015 (at time of writing)
++ Stars :: 11,081
++ Contributors :: 129
+
+*** [[https://github.com/SwiftBond/Bond][Bond]]
+
++ A data binding framework
++ Less concept-heavy 
++ Also well maintained
++ I am less familiar with it -- examples will use RAC
+
+
+* Interlude: ReactiveCocoa
+
+** What is "Functional Reactive Programming"?
+
+#+begin_quote 
+Functional reactive programming (FRP) is a programming paradigm for reactive
+programming (asynchronous dataflow programming) using the building blocks of
+functional programming (e.g. map, reduce, filter).
+#+end_quote
+
+** Signals
+
++ Represent streams of values (data) as they change
++ Signals can be /observed/
++ Two varieties in RAC: =SignalProducer= and =Signal=
++ Send /events/:
+  + =next=: The data that the signal carries -- can happen many times
+  + =error=: An error occurred -- terminates
+  + =interrupted=: The signal was interrupted -- terminates
+  + =completed=: Successful completion -- terminates
+
+** Signal Producers
+
+#+begin_src swift
+func doNetworkStuff() -> SignalProducer<JSON, NoError>
+let producer = doNetworkStuff()
+producer.startWithNext { json in print(json) }
+#+end_src
+
++ Has to be "started" to do anything
++ Kind of like promises
++ Network requests are a good example
+
+** Signals
+
++ Send values regardless of whether or not anything is observing
++ "Always On" semantics
+
+** Mutable Properties
+
+#+begin_src swift
+let text = MutableProperty<String>("Hello, World!")
+text.value // => "Hello, World!"
+text.producer // => SignalProducer<String, NoError>
+text.producer.startWithNext { s in print(s) } // prints "Hello, World!"
+text.value = "Yo." // prints "Yo"
+#+end_src
+
++ Exposes a =SignalProducer= of the values in the property
+
+** Binding
+
+#+begin_src swift
+let (observer, producer) = SignalProducer<String, NoError>.buffer()
+let text = MutableProperty<String>("")
+text <~ producer
+observer.sendNext("a")
+text.value // "a"
+observer.sendNext("b")
+text.value // "b"
+#+end_src
+
++ We can /bind/ the result of a =SignalProducer= to a =MutableProperty=
++ The binding operator: =<~=
++ No =KVO=!
+  
+
+** Actions
+
+#+begin_src swift
+func saveTodoOnServer(todo: Todo) -> SignalProducer<Bool, NSError> { 
+    return SignalProducer(value: true)
+}
+let createTodo = Action { (t: Todo) -> SignalProducer<Bool, NSError> in 
+    return saveTodoOnServer(t) 
+}
+let todo = Todo()
+createTodo.values.observeNext { success in print(success) }
+createTodo.apply(todo) // => SignalProducer<Bool, NSError>
+createTodo.apply(todo).start() // prints "true"
+createTodo.apply(todo).start() // prints "true"
+#+end_src
+
++ Like a function, but where the result of invocation is /observed/ rather than
+  /returned/
+  + Can have many observers!
++ Take parameters, return a =SignalProducer=
+  + We /apply/ parameters, and then /start/ the resulting producer
+  + Expose =values= property: A =Signal= of the values of the =SignalProducer=
+
+* A Sample Application: Todo List
+
+** ViewModels Drive the Application
+
+#+begin_src swift
+protocol ViewModelServicesProtocol {
+    
+    var todo: TodoServiceProtocol { get }
+    var date: DateServiceProtocol { get }
+    
+    func push(viewModel: ViewModelProtocol)
+    func pop(viewModel: ViewModelProtocol)
+}
+
+protocol ViewModelProtocol {
+    var services: ViewModelServicesProtocol { get }
+}
+#+end_src
+
+*** Navigation
+
+#+begin_src swift
+func push(viewModel: ViewModelProtocol)
+func pop(viewModel: ViewModelProtocol)
+#+end_src
+
++ *ViewModels* will instantiate and =push= other *ViewModels*.
++ Services are responsible for instantiating the proper Views.
+
+*** Model Services
+
+#+begin_src swift
+protocol TodoServiceProtocol {    
+    func update(todo: Todo) -> SignalProducer<Todo, NoError>
+    func delete(todo: Todo) -> SignalProducer<Bool, NoError>
+    func create(note: String, dueDate: NSDate) -> SignalProducer<Todo, NoError>
+}
+#+end_src
+
++ Model services deal with stateful resources, e.g. network operations
++ Only *ViewModels* have access to services
+
+** Views Observe ViewModels and /React/
+
+#+begin_src swift
+class TodoTableViewModel: ViewModel, CreateTodoViewModelDelegate {
+    let todos = MutableProperty<[TodoCellViewModel]>([])
+    let deleteTodo: Action<(todos: [TodoCellViewModel], cell: TodoCellViewModel), NSIndexPath?, NoError>
+}
+class TodoTableViewController: ReactiveViewController<TodoTableViewModel> {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        func removeRow(indexPath: NSIndexPath?) {
+            todoTableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Left)
+        }
+        // Remove a row whenever a Todo is deleted
+        viewModel.deleteTodo.values
+            .filter { $0 != nil }
+            .observeOn(UIScheduler())
+            .observeNext(removeRow)
+    }
+}
+#+end_src
