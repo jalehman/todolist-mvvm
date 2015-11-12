@@ -102,7 +102,7 @@ sync?
 
 + Mostly based on [[https://en.wikipedia.org/wiki/Functional_reactive_programming][Functional Reactive Programming (FRP)]]
   + Represent data as "streams of values over time"
-+ Used at: Savvy, Snapchat, GitHub, probably some other places too
++ Used at: [[http://savvy.ai][Savvy]], Snapchat, GitHub, probably some other places too
 
 *** Popular and well-maintained
 
