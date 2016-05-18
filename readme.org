@@ -165,7 +165,7 @@ text.value = "Yo." // prints "Yo"
 ** Binding
 
 #+begin_src swift
-let (observer, producer) = SignalProducer<String, NoError>.buffer()
+let (producer, observer) = SignalProducer<String, NoError>.buffer()
 let text = MutableProperty<String>("")
 text <~ producer
 observer.sendNext("a")
