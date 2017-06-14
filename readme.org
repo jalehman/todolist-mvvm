@@ -26,7 +26,7 @@
 + A slight addition to MVC
 + We'll discuss *Data Binding* later
 
-** Adds the /ViewModel/ 
+** Adds the /ViewModel/
 
 #+begin_quote
 "The central component of MVC, the model, captures the behavior of the
@@ -52,7 +52,7 @@ general user interactions, independent of the view itself.
 + Lower coupling
   + Decouples GUI code from presentation logic and state
 + Headless testing
- 
+
 
 ** View and ViewModel Relationship
 
@@ -91,7 +91,7 @@ sync?
 + 2-way binding is really hard (it's cyclical)
   + If 2-way binding seems like the only solution, find a better solution
 
-*** [[https://github.com/SwiftBond/Bond][ReactiveCocoa]] (RAC)
+*** [[https://github.com/ReactiveCocoa/ReactiveCocoa][ReactiveCocoa]] (RAC)
 
 + Mostly based on [[https://en.wikipedia.org/wiki/Functional_reactive_programming][Functional Reactive Programming (FRP)]]
   + Represent data as "streams of values over time"
@@ -107,7 +107,7 @@ sync?
 *** [[https://github.com/SwiftBond/Bond][Bond]]
 
 + A data binding framework
-+ Less concept-heavy 
++ Less concept-heavy
 + Also well maintained
 + I am less familiar with it -- examples will use RAC
 
@@ -116,7 +116,7 @@ sync?
 
 ** What is "Functional Reactive Programming"?
 
-#+begin_quote 
+#+begin_quote
 Functional reactive programming (FRP) is a programming paradigm for reactive
 programming (asynchronous dataflow programming) using the building blocks of
 functional programming (e.g. map, reduce, filter).
@@ -177,16 +177,16 @@ text.value // "b"
 + We can /bind/ the result of a =SignalProducer= to a =MutableProperty=
 + The binding operator: =<~=
 + No =KVO=!
-  
+
 
 ** Actions
 
 #+begin_src swift
-func saveTodoOnServer(todo: Todo) -> SignalProducer<Bool, NSError> { 
+func saveTodoOnServer(todo: Todo) -> SignalProducer<Bool, NSError> {
     return SignalProducer(value: true)
 }
-let createTodo = Action { (t: Todo) -> SignalProducer<Bool, NSError> in 
-    return saveTodoOnServer(t) 
+let createTodo = Action { (t: Todo) -> SignalProducer<Bool, NSError> in
+    return saveTodoOnServer(t)
 }
 let todo = Todo()
 createTodo.values.observeNext { success in print(success) }
@@ -209,10 +209,10 @@ createTodo.apply(todo).start() // prints "true"
 
 #+begin_src swift
 protocol ViewModelServicesProtocol {
-    
+
     var todo: TodoServiceProtocol { get }
     var date: DateServiceProtocol { get }
-    
+
     func push(viewModel: ViewModelProtocol)
     func pop(viewModel: ViewModelProtocol)
 }
@@ -235,7 +235,7 @@ func pop(viewModel: ViewModelProtocol)
 *** Model Services
 
 #+begin_src swift
-protocol TodoServiceProtocol {    
+protocol TodoServiceProtocol {
     func update(todo: Todo) -> SignalProducer<Todo, NoError>
     func delete(todo: Todo) -> SignalProducer<Bool, NoError>
     func create(note: String, dueDate: NSDate) -> SignalProducer<Todo, NoError>

@@ -201,7 +201,7 @@ sync?
 
 </section>
 <section id="slide-orgheadline10">
-<h4 id="orgheadline10"><a href="https://github.com/SwiftBond/Bond">ReactiveCocoa</a> (RAC)</h4>
+<h4 id="orgheadline10"><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a> (RAC)</h4>
 <ul>
 <li>Mostly based on <a href="https://en.wikipedia.org/wiki/Functional_reactive_programming">Functional Reactive Programming (FRP)</a>
 <ul>
@@ -343,11 +343,11 @@ text.value <span style="color: #586e75;">// </span><span style="color: #586e75;"
 <h3 id="orgheadline21">Actions</h3>
 <div class="org-src-container">
 
-<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">saveTodoOnServer</span><span style="color: #2aa198;">(</span>todo: <span style="color: #b58900;">Todo</span><span style="color: #2aa198;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NSError</span>&gt; <span style="color: #2aa198;">{</span> 
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">saveTodoOnServer</span><span style="color: #2aa198;">(</span>todo: <span style="color: #b58900;">Todo</span><span style="color: #2aa198;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NSError</span>&gt; <span style="color: #2aa198;">{</span>
     <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #b58900;">SignalProducer</span><span style="color: #b58900;">(</span>value: <span style="color: #268bd2; font-weight: bold;">true</span><span style="color: #b58900;">)</span>
 <span style="color: #2aa198;">}</span>
-<span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">createTodo </span>= <span style="color: #b58900;">Action</span> <span style="color: #2aa198;">{</span> <span style="color: #b58900;">(</span>t: <span style="color: #b58900;">Todo</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NSError</span>&gt; <span style="color: #859900; font-weight: bold;">in</span> 
-    <span style="color: #859900; font-weight: bold;">return</span> saveTodoOnServer<span style="color: #b58900;">(</span>t<span style="color: #b58900;">)</span> 
+<span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">createTodo </span>= <span style="color: #b58900;">Action</span> <span style="color: #2aa198;">{</span> <span style="color: #b58900;">(</span>t: <span style="color: #b58900;">Todo</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NSError</span>&gt; <span style="color: #859900; font-weight: bold;">in</span>
+    <span style="color: #859900; font-weight: bold;">return</span> saveTodoOnServer<span style="color: #b58900;">(</span>t<span style="color: #b58900;">)</span>
 <span style="color: #2aa198;">}</span>
 <span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">todo </span>= <span style="color: #b58900;">Todo</span><span style="color: #2aa198;">()</span>
 createTodo.values.observeNext <span style="color: #2aa198;">{</span> success <span style="color: #859900; font-weight: bold;">in</span> print<span style="color: #b58900;">(</span>success<span style="color: #b58900;">)</span> <span style="color: #2aa198;">}</span>
@@ -421,7 +421,7 @@ createTodo.apply<span style="color: #2aa198;">(</span>todo<span style="color: #2
 <h4 id="orgheadline24">Model Services</h4>
 <div class="org-src-container">
 
-<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">protocol</span> <span style="color: #b58900;">TodoServiceProtocol</span> <span style="color: #2aa198;">{</span>    
+<pre  class="src src-swift"><span style="color: #859900; font-weight: bold;">protocol</span> <span style="color: #b58900;">TodoServiceProtocol</span> <span style="color: #2aa198;">{</span>
     <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">update</span><span style="color: #b58900;">(</span>todo: <span style="color: #b58900;">Todo</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Todo</span>, <span style="color: #b58900;">NoError</span>&gt;
     <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">delete</span><span style="color: #b58900;">(</span>todo: <span style="color: #b58900;">Todo</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Bool</span>, <span style="color: #b58900;">NoError</span>&gt;
     <span style="color: #859900; font-weight: bold;">func</span> <span style="color: #268bd2;">create</span><span style="color: #b58900;">(</span>note: <span style="color: #b58900;">String</span>, dueDate: <span style="color: #b58900;">NSDate</span><span style="color: #b58900;">)</span> -&gt; <span style="color: #b58900;">SignalProducer</span>&lt;<span style="color: #b58900;">Todo</span>, <span style="color: #b58900;">NoError</span>&gt;
